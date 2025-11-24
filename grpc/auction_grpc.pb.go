@@ -23,8 +23,10 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuctionServer_Bid_FullMethodName    = "/grpc.AuctionServer/Bid"
-	AuctionServer_Result_FullMethodName = "/grpc.AuctionServer/Result"
+	AuctionServer_Bid_FullMethodName              = "/grpc.AuctionServer/Bid"
+	AuctionServer_Result_FullMethodName           = "/grpc.AuctionServer/Result"
+	AuctionServer_ReplicateBid_FullMethodName     = "/grpc.AuctionServer/ReplicateBid"
+	AuctionServer_AppointNewLeader_FullMethodName = "/grpc.AuctionServer/AppointNewLeader"
 )
 
 // AuctionServerClient is the client API for AuctionServer service.
@@ -35,12 +37,18 @@ type AuctionServerClient interface {
 	// Inputs:  amount (an int)
 	// Outputs: ack
 	// Comment: given a bid, returns an outcome among {fail, success or exception}
-	Bid(ctx context.Context, in *Amount, opts ...grpc.CallOption) (*Ack, error)
+	Bid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error)
 	// Method:  result
 	// Inputs:  void
 	// Outputs: outcome
 	// Comment: if the auction is over, it returns the result, else highest bid.
 	Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Outcome, error)
+	// Method
+	// Comment: Sends accepted bid to followers, and waits for a majority of acknowledges
+	ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error)
+	// When a follower detects a timeout ( doesnt recieve ack after sending)
+	// Send a message to all other servers, that we appoint a new leader
+	AppointNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error)
 }
 
 type auctionServerClient struct {
@@ -51,7 +59,7 @@ func NewAuctionServerClient(cc grpc.ClientConnInterface) AuctionServerClient {
 	return &auctionServerClient{cc}
 }
 
-func (c *auctionServerClient) Bid(ctx context.Context, in *Amount, opts ...grpc.CallOption) (*Ack, error) {
+func (c *auctionServerClient) Bid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Ack)
 	err := c.cc.Invoke(ctx, AuctionServer_Bid_FullMethodName, in, out, cOpts...)
@@ -71,6 +79,26 @@ func (c *auctionServerClient) Result(ctx context.Context, in *Empty, opts ...grp
 	return out, nil
 }
 
+func (c *auctionServerClient) ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, AuctionServer_ReplicateBid_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionServerClient) AppointNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, AuctionServer_AppointNewLeader_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuctionServerServer is the server API for AuctionServer service.
 // All implementations must embed UnimplementedAuctionServerServer
 // for forward compatibility.
@@ -79,12 +107,18 @@ type AuctionServerServer interface {
 	// Inputs:  amount (an int)
 	// Outputs: ack
 	// Comment: given a bid, returns an outcome among {fail, success or exception}
-	Bid(context.Context, *Amount) (*Ack, error)
+	Bid(context.Context, *BidEntry) (*Ack, error)
 	// Method:  result
 	// Inputs:  void
 	// Outputs: outcome
 	// Comment: if the auction is over, it returns the result, else highest bid.
 	Result(context.Context, *Empty) (*Outcome, error)
+	// Method
+	// Comment: Sends accepted bid to followers, and waits for a majority of acknowledges
+	ReplicateBid(context.Context, *BidEntry) (*Ack, error)
+	// When a follower detects a timeout ( doesnt recieve ack after sending)
+	// Send a message to all other servers, that we appoint a new leader
+	AppointNewLeader(context.Context, *LeaderInfo) (*Ack, error)
 	mustEmbedUnimplementedAuctionServerServer()
 }
 
@@ -95,11 +129,17 @@ type AuctionServerServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuctionServerServer struct{}
 
-func (UnimplementedAuctionServerServer) Bid(context.Context, *Amount) (*Ack, error) {
+func (UnimplementedAuctionServerServer) Bid(context.Context, *BidEntry) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Bid not implemented")
 }
 func (UnimplementedAuctionServerServer) Result(context.Context, *Empty) (*Outcome, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
+}
+func (UnimplementedAuctionServerServer) ReplicateBid(context.Context, *BidEntry) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReplicateBid not implemented")
+}
+func (UnimplementedAuctionServerServer) AppointNewLeader(context.Context, *LeaderInfo) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppointNewLeader not implemented")
 }
 func (UnimplementedAuctionServerServer) mustEmbedUnimplementedAuctionServerServer() {}
 func (UnimplementedAuctionServerServer) testEmbeddedByValue()                       {}
@@ -123,7 +163,7 @@ func RegisterAuctionServerServer(s grpc.ServiceRegistrar, srv AuctionServerServe
 }
 
 func _AuctionServer_Bid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Amount)
+	in := new(BidEntry)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -135,7 +175,7 @@ func _AuctionServer_Bid_Handler(srv interface{}, ctx context.Context, dec func(i
 		FullMethod: AuctionServer_Bid_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionServerServer).Bid(ctx, req.(*Amount))
+		return srv.(AuctionServerServer).Bid(ctx, req.(*BidEntry))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -158,6 +198,42 @@ func _AuctionServer_Result_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuctionServer_ReplicateBid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BidEntry)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServerServer).ReplicateBid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuctionServer_ReplicateBid_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServerServer).ReplicateBid(ctx, req.(*BidEntry))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuctionServer_AppointNewLeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LeaderInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServerServer).AppointNewLeader(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuctionServer_AppointNewLeader_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServerServer).AppointNewLeader(ctx, req.(*LeaderInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuctionServer_ServiceDesc is the grpc.ServiceDesc for AuctionServer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -172,6 +248,14 @@ var AuctionServer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Result",
 			Handler:    _AuctionServer_Result_Handler,
+		},
+		{
+			MethodName: "ReplicateBid",
+			Handler:    _AuctionServer_ReplicateBid_Handler,
+		},
+		{
+			MethodName: "AppointNewLeader",
+			Handler:    _AuctionServer_AppointNewLeader_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

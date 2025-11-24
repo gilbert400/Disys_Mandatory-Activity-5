@@ -85,6 +85,126 @@ func (x *Outcome) GetHighestBidder() string {
 	return ""
 }
 
+type BidEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Amount        int32                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
+	Bidder        string                 `protobuf:"bytes,2,opt,name=bidder,proto3" json:"bidder,omitempty"`
+	Timestamp     int32                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	SeqNo         int64                  `protobuf:"varint,4,opt,name=seqNo,proto3" json:"seqNo,omitempty"` // -1 until accepted into the bid sequence. Then updated to seq number
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BidEntry) Reset() {
+	*x = BidEntry{}
+	mi := &file_grpc_auction_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BidEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BidEntry) ProtoMessage() {}
+
+func (x *BidEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_grpc_auction_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BidEntry.ProtoReflect.Descriptor instead.
+func (*BidEntry) Descriptor() ([]byte, []int) {
+	return file_grpc_auction_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *BidEntry) GetAmount() int32 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+
+func (x *BidEntry) GetBidder() string {
+	if x != nil {
+		return x.Bidder
+	}
+	return ""
+}
+
+func (x *BidEntry) GetTimestamp() int32 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *BidEntry) GetSeqNo() int64 {
+	if x != nil {
+		return x.SeqNo
+	}
+	return 0
+}
+
+type LeaderInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LeaderAddr    string                 `protobuf:"bytes,1,opt,name=leaderAddr,proto3" json:"leaderAddr,omitempty"`
+	LeaderId      int32                  `protobuf:"varint,2,opt,name=leaderId,proto3" json:"leaderId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LeaderInfo) Reset() {
+	*x = LeaderInfo{}
+	mi := &file_grpc_auction_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LeaderInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaderInfo) ProtoMessage() {}
+
+func (x *LeaderInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_grpc_auction_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaderInfo.ProtoReflect.Descriptor instead.
+func (*LeaderInfo) Descriptor() ([]byte, []int) {
+	return file_grpc_auction_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *LeaderInfo) GetLeaderAddr() string {
+	if x != nil {
+		return x.LeaderAddr
+	}
+	return ""
+}
+
+func (x *LeaderInfo) GetLeaderId() int32 {
+	if x != nil {
+		return x.LeaderId
+	}
+	return 0
+}
+
 type Empty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -93,7 +213,7 @@ type Empty struct {
 
 func (x *Empty) Reset() {
 	*x = Empty{}
-	mi := &file_grpc_auction_proto_msgTypes[1]
+	mi := &file_grpc_auction_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -105,7 +225,7 @@ func (x *Empty) String() string {
 func (*Empty) ProtoMessage() {}
 
 func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_grpc_auction_proto_msgTypes[1]
+	mi := &file_grpc_auction_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -118,67 +238,7 @@ func (x *Empty) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Empty.ProtoReflect.Descriptor instead.
 func (*Empty) Descriptor() ([]byte, []int) {
-	return file_grpc_auction_proto_rawDescGZIP(), []int{1}
-}
-
-type Amount struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Amount        int32                  `protobuf:"varint,1,opt,name=amount,proto3" json:"amount,omitempty"`
-	Bidder        string                 `protobuf:"bytes,2,opt,name=bidder,proto3" json:"bidder,omitempty"`
-	Timestamp     int32                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *Amount) Reset() {
-	*x = Amount{}
-	mi := &file_grpc_auction_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *Amount) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Amount) ProtoMessage() {}
-
-func (x *Amount) ProtoReflect() protoreflect.Message {
-	mi := &file_grpc_auction_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Amount.ProtoReflect.Descriptor instead.
-func (*Amount) Descriptor() ([]byte, []int) {
-	return file_grpc_auction_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *Amount) GetAmount() int32 {
-	if x != nil {
-		return x.Amount
-	}
-	return 0
-}
-
-func (x *Amount) GetBidder() string {
-	if x != nil {
-		return x.Bidder
-	}
-	return ""
-}
-
-func (x *Amount) GetTimestamp() int32 {
-	if x != nil {
-		return x.Timestamp
-	}
-	return 0
+	return file_grpc_auction_proto_rawDescGZIP(), []int{3}
 }
 
 type Ack struct {
@@ -190,7 +250,7 @@ type Ack struct {
 
 func (x *Ack) Reset() {
 	*x = Ack{}
-	mi := &file_grpc_auction_proto_msgTypes[3]
+	mi := &file_grpc_auction_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -202,7 +262,7 @@ func (x *Ack) String() string {
 func (*Ack) ProtoMessage() {}
 
 func (x *Ack) ProtoReflect() protoreflect.Message {
-	mi := &file_grpc_auction_proto_msgTypes[3]
+	mi := &file_grpc_auction_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -215,7 +275,7 @@ func (x *Ack) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Ack.ProtoReflect.Descriptor instead.
 func (*Ack) Descriptor() ([]byte, []int) {
-	return file_grpc_auction_proto_rawDescGZIP(), []int{3}
+	return file_grpc_auction_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Ack) GetAck() string {
@@ -235,17 +295,26 @@ const file_grpc_auction_proto_rawDesc = "" +
 	"\n" +
 	"highestBid\x18\x02 \x01(\x05R\n" +
 	"highestBid\x12$\n" +
-	"\rhighestBidder\x18\x03 \x01(\tR\rhighestBidder\"\a\n" +
-	"\x05Empty\"V\n" +
-	"\x06Amount\x12\x16\n" +
+	"\rhighestBidder\x18\x03 \x01(\tR\rhighestBidder\"n\n" +
+	"\bBidEntry\x12\x16\n" +
 	"\x06amount\x18\x01 \x01(\x05R\x06amount\x12\x16\n" +
 	"\x06bidder\x18\x02 \x01(\tR\x06bidder\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x05R\ttimestamp\"\x17\n" +
+	"\ttimestamp\x18\x03 \x01(\x05R\ttimestamp\x12\x14\n" +
+	"\x05seqNo\x18\x04 \x01(\x03R\x05seqNo\"H\n" +
+	"\n" +
+	"LeaderInfo\x12\x1e\n" +
+	"\n" +
+	"leaderAddr\x18\x01 \x01(\tR\n" +
+	"leaderAddr\x12\x1a\n" +
+	"\bleaderId\x18\x02 \x01(\x05R\bleaderId\"\a\n" +
+	"\x05Empty\"\x17\n" +
 	"\x03Ack\x12\x10\n" +
-	"\x03ack\x18\x01 \x01(\tR\x03ack2U\n" +
-	"\rAuctionServer\x12\x1e\n" +
-	"\x03Bid\x12\f.grpc.Amount\x1a\t.grpc.Ack\x12$\n" +
-	"\x06Result\x12\v.grpc.Empty\x1a\r.grpc.OutcomeB!Z\x1fDisys_Mandatory-Activity-5/grpcb\x06proto3"
+	"\x03ack\x18\x01 \x01(\tR\x03ack2\xb3\x01\n" +
+	"\rAuctionServer\x12 \n" +
+	"\x03Bid\x12\x0e.grpc.BidEntry\x1a\t.grpc.Ack\x12$\n" +
+	"\x06Result\x12\v.grpc.Empty\x1a\r.grpc.Outcome\x12)\n" +
+	"\fReplicateBid\x12\x0e.grpc.BidEntry\x1a\t.grpc.Ack\x12/\n" +
+	"\x10AppointNewLeader\x12\x10.grpc.LeaderInfo\x1a\t.grpc.AckB!Z\x1fDisys_Mandatory-Activity-5/grpcb\x06proto3"
 
 var (
 	file_grpc_auction_proto_rawDescOnce sync.Once
@@ -259,20 +328,25 @@ func file_grpc_auction_proto_rawDescGZIP() []byte {
 	return file_grpc_auction_proto_rawDescData
 }
 
-var file_grpc_auction_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_grpc_auction_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_grpc_auction_proto_goTypes = []any{
-	(*Outcome)(nil), // 0: grpc.Outcome
-	(*Empty)(nil),   // 1: grpc.Empty
-	(*Amount)(nil),  // 2: grpc.Amount
-	(*Ack)(nil),     // 3: grpc.Ack
+	(*Outcome)(nil),    // 0: grpc.Outcome
+	(*BidEntry)(nil),   // 1: grpc.BidEntry
+	(*LeaderInfo)(nil), // 2: grpc.LeaderInfo
+	(*Empty)(nil),      // 3: grpc.Empty
+	(*Ack)(nil),        // 4: grpc.Ack
 }
 var file_grpc_auction_proto_depIdxs = []int32{
-	2, // 0: grpc.AuctionServer.Bid:input_type -> grpc.Amount
-	1, // 1: grpc.AuctionServer.Result:input_type -> grpc.Empty
-	3, // 2: grpc.AuctionServer.Bid:output_type -> grpc.Ack
-	0, // 3: grpc.AuctionServer.Result:output_type -> grpc.Outcome
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	1, // 0: grpc.AuctionServer.Bid:input_type -> grpc.BidEntry
+	3, // 1: grpc.AuctionServer.Result:input_type -> grpc.Empty
+	1, // 2: grpc.AuctionServer.ReplicateBid:input_type -> grpc.BidEntry
+	2, // 3: grpc.AuctionServer.AppointNewLeader:input_type -> grpc.LeaderInfo
+	4, // 4: grpc.AuctionServer.Bid:output_type -> grpc.Ack
+	0, // 5: grpc.AuctionServer.Result:output_type -> grpc.Outcome
+	4, // 6: grpc.AuctionServer.ReplicateBid:output_type -> grpc.Ack
+	4, // 7: grpc.AuctionServer.AppointNewLeader:output_type -> grpc.Ack
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -289,7 +363,7 @@ func file_grpc_auction_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_grpc_auction_proto_rawDesc), len(file_grpc_auction_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
