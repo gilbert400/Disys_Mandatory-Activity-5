@@ -12,13 +12,21 @@ service AuctionServer {
   //Inputs:  amount (an int)
   //Outputs: ack
   //Comment: given a bid, returns an outcome among {fail, success or exception}
-  rpc Bid(Amount) returns (Ack);
+  rpc Bid(BidEntry) returns (Ack);
 
   //Method:  result
   //Inputs:  void
   //Outputs: outcome
   //Comment: if the auction is over, it returns the result, else highest bid.
   rpc Result(Empty) returns (Outcome);
+
+  // Method
+  //Comment: Sends accepted bid to followers, and waits for a majority of acknowledges
+  rpc ReplicateBid(BidEntry) returns (Ack);
+
+  //When a follower detects a timeout ( doesnt recieve ack after sending)
+  //Send a message to all other servers, that we appoint a new leader
+  rpc AppointNewLeader(LeaderInfo) returns (Ack);
 }
 
 message Outcome {
@@ -27,13 +35,20 @@ message Outcome {
   string highestBidder = 3;
 }
 
-message Empty {}
-
-message Amount {
+message BidEntry {
   int32 amount = 1;
   string bidder = 2;
   int32 timestamp = 3;
+  int64 seqNo = 4; // -1 until accepted into the bid sequence. Then updated to seq number
 }
+
+message LeaderInfo {
+  string leaderAddr = 1;
+  int32 leaderId = 2;
+}
+
+message Empty {}
+
 message Ack {
   string ack = 1;
 }

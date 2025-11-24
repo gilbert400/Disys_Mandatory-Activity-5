@@ -50,7 +50,7 @@ func (s *AuctionServer) Bid(ctx context.Context, req *pb.Amount) (*pb.Ack, error
 	return nil, nil
 }
 
-func (s *AuctionServer) ReplicateBid(ctx context.Context, entry *pb.BidEntry) (*pb.RepAck, error) {
+func (s *AuctionServer) ReplicateBid(ctx context.Context, entry *pb.bidtjuhej) (*pb.RepAck, error) {
 	// apply in seq order
 	return nil, nil
 }
