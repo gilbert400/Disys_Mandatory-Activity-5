@@ -1,0 +1,39 @@
+//This file acts as a contract between the client and server,
+// describing both the structure of the data and the remote procedure calls (RPCs)
+// they use to communicate.
+
+syntax = "proto3";
+package grpc;
+
+option go_package = "Disys_Mandatory-Activity-5/grpc";
+
+service AuctionServer {
+  //Method:  bid
+  //Inputs:  amount (an int)
+  //Outputs: ack
+  //Comment: given a bid, returns an outcome among {fail, success or exception}
+  rpc Bid(Amount) returns (Ack);
+
+  //Method:  result
+  //Inputs:  void
+  //Outputs: outcome
+  //Comment: if the auction is over, it returns the result, else highest bid.
+  rpc Result(Empty) returns (Outcome);
+}
+
+message Outcome {
+  string result = 1;
+  int32 highestBid = 2;
+  string highestBidder = 3;
+}
+
+message Empty {}
+
+message Amount {
+  int32 amount = 1;
+  string bidder = 2;
+  int32 timestamp = 3;
+}
+message Ack {
+  string ack = 1;
+}
