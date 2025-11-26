@@ -23,10 +23,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuctionServer_Bid_FullMethodName              = "/grpc.AuctionServer/Bid"
-	AuctionServer_Result_FullMethodName           = "/grpc.AuctionServer/Result"
-	AuctionServer_ReplicateBid_FullMethodName     = "/grpc.AuctionServer/ReplicateBid"
-	AuctionServer_AppointNewLeader_FullMethodName = "/grpc.AuctionServer/AppointNewLeader"
+	AuctionServer_Bid_FullMethodName               = "/grpc.AuctionServer/Bid"
+	AuctionServer_Result_FullMethodName            = "/grpc.AuctionServer/Result"
+	AuctionServer_ReplicateBid_FullMethodName      = "/grpc.AuctionServer/ReplicateBid"
+	AuctionServer_AnnounceNewLeader_FullMethodName = "/grpc.AuctionServer/AnnounceNewLeader"
+	AuctionServer_AreYouAlive_FullMethodName       = "/grpc.AuctionServer/AreYouAlive"
 )
 
 // AuctionServerClient is the client API for AuctionServer service.
@@ -48,7 +49,8 @@ type AuctionServerClient interface {
 	ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error)
 	// When a follower detects a timeout ( doesnt recieve ack after sending)
 	// Send a message to all other servers, that we appoint a new leader
-	AppointNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error)
+	AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error)
+	AreYouAlive(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Ack, error)
 }
 
 type auctionServerClient struct {
@@ -89,10 +91,20 @@ func (c *auctionServerClient) ReplicateBid(ctx context.Context, in *BidEntry, op
 	return out, nil
 }
 
-func (c *auctionServerClient) AppointNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error) {
+func (c *auctionServerClient) AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Ack)
-	err := c.cc.Invoke(ctx, AuctionServer_AppointNewLeader_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AuctionServer_AnnounceNewLeader_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionServerClient) AreYouAlive(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Ack, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, AuctionServer_AreYouAlive_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +130,8 @@ type AuctionServerServer interface {
 	ReplicateBid(context.Context, *BidEntry) (*Ack, error)
 	// When a follower detects a timeout ( doesnt recieve ack after sending)
 	// Send a message to all other servers, that we appoint a new leader
-	AppointNewLeader(context.Context, *LeaderInfo) (*Ack, error)
+	AnnounceNewLeader(context.Context, *LeaderInfo) (*Ack, error)
+	AreYouAlive(context.Context, *Empty) (*Ack, error)
 	mustEmbedUnimplementedAuctionServerServer()
 }
 
@@ -138,8 +151,11 @@ func (UnimplementedAuctionServerServer) Result(context.Context, *Empty) (*Outcom
 func (UnimplementedAuctionServerServer) ReplicateBid(context.Context, *BidEntry) (*Ack, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplicateBid not implemented")
 }
-func (UnimplementedAuctionServerServer) AppointNewLeader(context.Context, *LeaderInfo) (*Ack, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AppointNewLeader not implemented")
+func (UnimplementedAuctionServerServer) AnnounceNewLeader(context.Context, *LeaderInfo) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AnnounceNewLeader not implemented")
+}
+func (UnimplementedAuctionServerServer) AreYouAlive(context.Context, *Empty) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AreYouAlive not implemented")
 }
 func (UnimplementedAuctionServerServer) mustEmbedUnimplementedAuctionServerServer() {}
 func (UnimplementedAuctionServerServer) testEmbeddedByValue()                       {}
@@ -216,20 +232,38 @@ func _AuctionServer_ReplicateBid_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-func _AuctionServer_AppointNewLeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _AuctionServer_AnnounceNewLeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LeaderInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(AuctionServerServer).AppointNewLeader(ctx, in)
+		return srv.(AuctionServerServer).AnnounceNewLeader(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: AuctionServer_AppointNewLeader_FullMethodName,
+		FullMethod: AuctionServer_AnnounceNewLeader_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionServerServer).AppointNewLeader(ctx, req.(*LeaderInfo))
+		return srv.(AuctionServerServer).AnnounceNewLeader(ctx, req.(*LeaderInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuctionServer_AreYouAlive_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServerServer).AreYouAlive(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuctionServer_AreYouAlive_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServerServer).AreYouAlive(ctx, req.(*Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -254,8 +288,12 @@ var AuctionServer_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuctionServer_ReplicateBid_Handler,
 		},
 		{
-			MethodName: "AppointNewLeader",
-			Handler:    _AuctionServer_AppointNewLeader_Handler,
+			MethodName: "AnnounceNewLeader",
+			Handler:    _AuctionServer_AnnounceNewLeader_Handler,
+		},
+		{
+			MethodName: "AreYouAlive",
+			Handler:    _AuctionServer_AreYouAlive_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -26,7 +26,9 @@ service AuctionServer {
 
   //When a follower detects a timeout ( doesnt recieve ack after sending)
   //Send a message to all other servers, that we appoint a new leader
-  rpc AppointNewLeader(LeaderInfo) returns (Ack);
+  rpc AnnounceNewLeader(LeaderInfo) returns (Ack);
+
+  rpc AreYouAlive(Empty) returns (Ack);
 }
 
 message Outcome {

@@ -309,12 +309,13 @@ const file_grpc_auction_proto_rawDesc = "" +
 	"\bleaderId\x18\x02 \x01(\x05R\bleaderId\"\a\n" +
 	"\x05Empty\"\x17\n" +
 	"\x03Ack\x12\x10\n" +
-	"\x03ack\x18\x01 \x01(\tR\x03ack2\xb3\x01\n" +
+	"\x03ack\x18\x01 \x01(\tR\x03ack2\xdb\x01\n" +
 	"\rAuctionServer\x12 \n" +
 	"\x03Bid\x12\x0e.grpc.BidEntry\x1a\t.grpc.Ack\x12$\n" +
 	"\x06Result\x12\v.grpc.Empty\x1a\r.grpc.Outcome\x12)\n" +
-	"\fReplicateBid\x12\x0e.grpc.BidEntry\x1a\t.grpc.Ack\x12/\n" +
-	"\x10AppointNewLeader\x12\x10.grpc.LeaderInfo\x1a\t.grpc.AckB!Z\x1fDisys_Mandatory-Activity-5/grpcb\x06proto3"
+	"\fReplicateBid\x12\x0e.grpc.BidEntry\x1a\t.grpc.Ack\x120\n" +
+	"\x11AnnounceNewLeader\x12\x10.grpc.LeaderInfo\x1a\t.grpc.Ack\x12%\n" +
+	"\vAreYouAlive\x12\v.grpc.Empty\x1a\t.grpc.AckB!Z\x1fDisys_Mandatory-Activity-5/grpcb\x06proto3"
 
 var (
 	file_grpc_auction_proto_rawDescOnce sync.Once
@@ -340,13 +341,15 @@ var file_grpc_auction_proto_depIdxs = []int32{
 	1, // 0: grpc.AuctionServer.Bid:input_type -> grpc.BidEntry
 	3, // 1: grpc.AuctionServer.Result:input_type -> grpc.Empty
 	1, // 2: grpc.AuctionServer.ReplicateBid:input_type -> grpc.BidEntry
-	2, // 3: grpc.AuctionServer.AppointNewLeader:input_type -> grpc.LeaderInfo
-	4, // 4: grpc.AuctionServer.Bid:output_type -> grpc.Ack
-	0, // 5: grpc.AuctionServer.Result:output_type -> grpc.Outcome
-	4, // 6: grpc.AuctionServer.ReplicateBid:output_type -> grpc.Ack
-	4, // 7: grpc.AuctionServer.AppointNewLeader:output_type -> grpc.Ack
-	4, // [4:8] is the sub-list for method output_type
-	0, // [0:4] is the sub-list for method input_type
+	2, // 3: grpc.AuctionServer.AnnounceNewLeader:input_type -> grpc.LeaderInfo
+	3, // 4: grpc.AuctionServer.AreYouAlive:input_type -> grpc.Empty
+	4, // 5: grpc.AuctionServer.Bid:output_type -> grpc.Ack
+	0, // 6: grpc.AuctionServer.Result:output_type -> grpc.Outcome
+	4, // 7: grpc.AuctionServer.ReplicateBid:output_type -> grpc.Ack
+	4, // 8: grpc.AuctionServer.AnnounceNewLeader:output_type -> grpc.Ack
+	4, // 9: grpc.AuctionServer.AreYouAlive:output_type -> grpc.Ack
+	5, // [5:10] is the sub-list for method output_type
+	0, // [0:5] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
