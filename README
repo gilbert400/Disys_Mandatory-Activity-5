@@ -1,0 +1,80 @@
+# Distributed Auction System
+
+This project implements a replicated, crash-resilient **distributed auction system** using Go and gRPC.
+
+Multiple server nodes maintain a shared auction state (highest bid and highest bidder).
+Clients can connect to any node to place bids or query the current auction result.
+The system is designed to tolerate **one fail-stop node failure** using leader-based replication and a simple
+leader election protocol.
+
+## Features
+
+- **Bid API**: Place bids with a bidder name and amount.
+- **Result API**: Query current highest bid or final auction result.
+- **Leader-based replication**:
+  - A single leader validates bids and replicates them to followers.
+  - Followers forward client bids to the current leader.
+- **Leader election**:
+  - Followers detect leader failure via timeouts.
+  - A new leader is elected among surviving nodes.
+- **Auction timeout**:
+  - The auction automatically ends after 100 seconds.
+  - After that, `Result` returns the final winner.
+
+## Project Structure (relevant parts)
+
+- `server.go`
+  Implements the `AuctionServer`:
+  - gRPC server with `Bid`, `Result`, `ReplicateBid`, `StartElection`, `AnnounceNewLeader`, and `HeartBeat`.
+  - Keeps the replicated auction state (`highestBid`, `highestBidder`, `bidders`, `lastBid`, `auctionOver`).
+
+- `client.go`
+  Simple CLI client that:
+  - Connects to any reachable server (ports `8000`–`8003`).
+  - Allows a user to place bids and query the result interactively.
+
+- `auction.proto`
+  gRPC service and message definitions for the auction system.
+
+
+## Running the Servers
+
+By default, ports start from **8000** and increase by 1 per node (`8000`, `8001`, `8002`, …).
+
+Each server process takes:
+
+- `--id` – this node’s ID (0..n-1)
+- `--n` – total number of nodes in the system
+
+Example: start **4 nodes** in separate terminals:
+
+# Terminal 1 ( SERVER )
+go run server.go --id=0 --n=4
+
+# Terminal 2 ( SERVER )
+go run server.go --id=1 --n=4
+
+# Terminal 3 ( SERVER )
+go run server.go --id=2 --n=4
+
+# Terminal 4 ( SERVER )
+go run server.go --id=3 --n=4
+
+# Terminal 5 ( CLIENT )
+go run client.go --bidder=Alice
+
+
+Running the client
+The client connects to a random node in the port range 8000–8003 (skipping any that are down).
+You can specify the bidder name using the --bidder flag.
+
+Example:
+go run client.go --bidder=Alice
+
+
+You will see a small command prompt:
+Commands:
+  bid <amount>
+  result
+  exit
+> 
