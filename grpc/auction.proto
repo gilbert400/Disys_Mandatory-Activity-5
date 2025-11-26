@@ -53,6 +53,6 @@ message BidEntry {
 }
 
 message NodeInfo {
-  string leaderAddr = 1;
-  int32 leaderId = 2;
+  string addr = 1;
+  int32 id = 2;
 }
