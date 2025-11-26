@@ -191,8 +191,8 @@ func (x *BidEntry) GetSeqNo() int64 {
 
 type NodeInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	LeaderAddr    string                 `protobuf:"bytes,1,opt,name=leaderAddr,proto3" json:"leaderAddr,omitempty"`
-	LeaderId      int32                  `protobuf:"varint,2,opt,name=leaderId,proto3" json:"leaderId,omitempty"`
+	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
+	Id            int32                  `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -227,16 +227,16 @@ func (*NodeInfo) Descriptor() ([]byte, []int) {
 	return file_grpc_auction_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *NodeInfo) GetLeaderAddr() string {
+func (x *NodeInfo) GetAddr() string {
 	if x != nil {
-		return x.LeaderAddr
+		return x.Addr
 	}
 	return ""
 }
 
-func (x *NodeInfo) GetLeaderId() int32 {
+func (x *NodeInfo) GetId() int32 {
 	if x != nil {
-		return x.LeaderId
+		return x.Id
 	}
 	return 0
 }
@@ -257,12 +257,10 @@ const file_grpc_auction_proto_rawDesc = "" +
 	"\x06amount\x18\x01 \x01(\x05R\x06amount\x12\x16\n" +
 	"\x06bidder\x18\x02 \x01(\tR\x06bidder\x12\x1c\n" +
 	"\ttimestamp\x18\x03 \x01(\x05R\ttimestamp\x12\x14\n" +
-	"\x05seqNo\x18\x04 \x01(\x03R\x05seqNo\"F\n" +
-	"\bNodeInfo\x12\x1e\n" +
-	"\n" +
-	"leaderAddr\x18\x01 \x01(\tR\n" +
-	"leaderAddr\x12\x1a\n" +
-	"\bleaderId\x18\x02 \x01(\x05R\bleaderId2\x8d\x02\n" +
+	"\x05seqNo\x18\x04 \x01(\x03R\x05seqNo\".\n" +
+	"\bNodeInfo\x12\x12\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x0e\n" +
+	"\x02id\x18\x02 \x01(\x05R\x02id2\x8d\x02\n" +
 	"\rAuctionServer\x12\"\n" +
 	"\x03Bid\x12\x0e.grpc.BidEntry\x1a\v.grpc.Reply\x12$\n" +
 	"\x06Result\x12\v.grpc.Reply\x1a\r.grpc.Outcome\x12+\n" +
