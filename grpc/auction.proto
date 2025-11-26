@@ -26,7 +26,9 @@ service AuctionServer {
 
   //When a follower detects a timeout ( doesnt recieve ack after sending)
   //Send a message to all other servers, that we appoint a new leader
-  rpc AnnounceNewLeader(LeaderInfo) returns (Reply);
+  rpc AnnounceNewLeader(NodeInfo) returns (Reply);
+
+  rpc StartElection(Reply) returns (NodeInfo);
 
   rpc HeartBeat(Reply) returns (Reply);
 
@@ -50,7 +52,7 @@ message BidEntry {
   int64 seqNo = 4; // -1 until accepted into the bid sequence. Then updated to seq number
 }
 
-message LeaderInfo {
+message NodeInfo {
   string leaderAddr = 1;
   int32 leaderId = 2;
 }
