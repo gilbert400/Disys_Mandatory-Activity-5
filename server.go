@@ -11,6 +11,7 @@ import (
 
 	pb "github.com/gilbert400/Disys_Mandatory-Activity-5/grpc"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const basePort = 8000
@@ -32,7 +33,7 @@ type AuctionServer struct {
 	appliedSeq int64
 
 	// auction state
-	mutex         sync.Mutex
+	mu            sync.Mutex
 	highestBid    int
 	highestBidder string
 	bidders       map[string]bool
@@ -44,15 +45,96 @@ type AuctionServer struct {
 	auctionOver bool
 }
 
-func (s *AuctionServer) Bid(ctx context.Context, req *pb.Amount) (*pb.Ack, error) {
+func (s *AuctionServer) Bid(ctx context.Context, req *pb.BidEntry) (*pb.Ack, error) {
 	// if not leader -> forward
 	// if leader -> validate, replicate, commit, ack
+
+	if !s.isLeader {
+		conn, err := grpc.Dial(s.leaderAddr, grpc.WithInsecure())
+		if err != nil {
+			s.AppointNewLeader()
+			return &pb.Ack{Ack: "leader unavailable, starting election"}, nil
+		}
+		defer conn.Close()
+		client := pb.NewAuctionServerClient(conn)
+
+		cctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		resp, err := client.Bid(cctx, req)
+		if err != nil {
+			s.AppointNewLeader()
+			return &pb.Ack{Ack: "no response, new election"}, nil
+		}
+		return resp, nil
+	}
+
 	return nil, nil
 }
 
-func (s *AuctionServer) ReplicateBid(ctx context.Context, entry *pb.bidtjuhej) (*pb.RepAck, error) {
+// 1. Called when a node detects leader failure
+func (s *AuctionServer) startElection() {
+	log.Printf("Node %d starting election", s.id)
+	newLeaderID, newLeaderAddr := s.electNewLeader()
+	s.updateLeaderState(newLeaderID, newLeaderAddr)
+	s.announceNewLeader(newLeaderID, newLeaderAddr)
+}
+
+// 2. Determines which node becomes leader (highest ID)
+func (s *AuctionServer) electNewLeader() (int, string) {
+	highestID := s.id
+	highestAddr := s.addr
+	for _, peer := range s.peers {
+		var peerID int
+		_, err := fmt.Sscanf(peer, "localhost:%d", &peerID)
+		if err != nil {
+			continue
+		}
+		peerID = peerID - basePort
+		if peerID > highestID {
+			highestID = peerID
+			highestAddr = peer
+		}
+	}
+	return highestID, highestAddr
+}
+
+// 3. Updates local state and broadcasts announcement
+func (s *AuctionServer) announceNewLeader(leaderID int, leaderAddr string) {
+	for _, peer := range s.peers {
+		conn, err := grpc.Dial(peer, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			continue
+		}
+		client := pb.NewAuctionServerClient(conn)
+		client.AppointNewLeader(context.Background(), &pb.LeaderInfo{
+			LeaderAddr: leaderAddr,
+			LeaderId:   int32(leaderID),
+		})
+		conn.Close()
+	}
+}
+
+func (s *AuctionServer) updateLeaderState(leaderID int, leaderAddr string) {
+	s.isLeader = (s.id == leaderID)
+	s.leaderAddr = leaderAddr
+	log.Printf("Leader updated: node %d at %s", leaderID, leaderAddr)
+}
+
+func (s *AuctionServer) ReplicateBid(ctx context.Context, entry *pb.BidEntry) (*pb.Ack, error) {
 	// apply in seq order
 	return nil, nil
+}
+
+func (s *AuctionServer) forwardBidToLeader(ctx context.Context, req *pb.BidEntry) (*pb.Ack, error) {
+	conn, err := grpc.Dial(s.leaderAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return &pb.Ack{Ack: "fail: cannot reach leader"}, nil
+	}
+	defer conn.Close()
+
+	client := pb.NewAuctionServerClient(conn)
+	return client.Bid(ctx, req)
 }
 
 // Startup initialize
