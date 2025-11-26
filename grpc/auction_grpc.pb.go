@@ -28,7 +28,6 @@ const (
 	AuctionServer_ReplicateBid_FullMethodName      = "/grpc.AuctionServer/ReplicateBid"
 	AuctionServer_AnnounceNewLeader_FullMethodName = "/grpc.AuctionServer/AnnounceNewLeader"
 	AuctionServer_HeartBeat_FullMethodName         = "/grpc.AuctionServer/HeartBeat"
-	AuctionServer_RequestVote_FullMethodName       = "/grpc.AuctionServer/RequestVote"
 )
 
 // AuctionServerClient is the client API for AuctionServer service.
@@ -39,20 +38,19 @@ type AuctionServerClient interface {
 	// Inputs:  amount (an int)
 	// Outputs: ack
 	// Comment: given a bid, returns an outcome among {fail, success or exception}
-	Bid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error)
+	Bid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Reply, error)
 	// Method:  result
 	// Inputs:  void
 	// Outputs: outcome
 	// Comment: if the auction is over, it returns the result, else highest bid.
-	Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Outcome, error)
+	Result(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*Outcome, error)
 	// Method
 	// Comment: Sends accepted bid to followers, and waits for a majority of acknowledges
-	ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error)
+	ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Reply, error)
 	// When a follower detects a timeout ( doesnt recieve ack after sending)
 	// Send a message to all other servers, that we appoint a new leader
-	AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error)
-	HeartBeat(ctx context.Context, in *Ack, opts ...grpc.CallOption) (*Empty, error)
-	RequestVote(ctx context.Context, in *RequestMessage, opts ...grpc.CallOption) (*VoteResult, error)
+	AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Reply, error)
+	HeartBeat(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*Reply, error)
 }
 
 type auctionServerClient struct {
@@ -63,9 +61,9 @@ func NewAuctionServerClient(cc grpc.ClientConnInterface) AuctionServerClient {
 	return &auctionServerClient{cc}
 }
 
-func (c *auctionServerClient) Bid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error) {
+func (c *auctionServerClient) Bid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Reply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Ack)
+	out := new(Reply)
 	err := c.cc.Invoke(ctx, AuctionServer_Bid_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -73,7 +71,7 @@ func (c *auctionServerClient) Bid(ctx context.Context, in *BidEntry, opts ...grp
 	return out, nil
 }
 
-func (c *auctionServerClient) Result(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Outcome, error) {
+func (c *auctionServerClient) Result(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*Outcome, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Outcome)
 	err := c.cc.Invoke(ctx, AuctionServer_Result_FullMethodName, in, out, cOpts...)
@@ -83,9 +81,9 @@ func (c *auctionServerClient) Result(ctx context.Context, in *Empty, opts ...grp
 	return out, nil
 }
 
-func (c *auctionServerClient) ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Ack, error) {
+func (c *auctionServerClient) ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Reply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Ack)
+	out := new(Reply)
 	err := c.cc.Invoke(ctx, AuctionServer_ReplicateBid_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -93,9 +91,9 @@ func (c *auctionServerClient) ReplicateBid(ctx context.Context, in *BidEntry, op
 	return out, nil
 }
 
-func (c *auctionServerClient) AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Ack, error) {
+func (c *auctionServerClient) AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Reply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Ack)
+	out := new(Reply)
 	err := c.cc.Invoke(ctx, AuctionServer_AnnounceNewLeader_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -103,20 +101,10 @@ func (c *auctionServerClient) AnnounceNewLeader(ctx context.Context, in *LeaderI
 	return out, nil
 }
 
-func (c *auctionServerClient) HeartBeat(ctx context.Context, in *Ack, opts ...grpc.CallOption) (*Empty, error) {
+func (c *auctionServerClient) HeartBeat(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*Reply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
+	out := new(Reply)
 	err := c.cc.Invoke(ctx, AuctionServer_HeartBeat_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *auctionServerClient) RequestVote(ctx context.Context, in *RequestMessage, opts ...grpc.CallOption) (*VoteResult, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(VoteResult)
-	err := c.cc.Invoke(ctx, AuctionServer_RequestVote_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -131,20 +119,19 @@ type AuctionServerServer interface {
 	// Inputs:  amount (an int)
 	// Outputs: ack
 	// Comment: given a bid, returns an outcome among {fail, success or exception}
-	Bid(context.Context, *BidEntry) (*Ack, error)
+	Bid(context.Context, *BidEntry) (*Reply, error)
 	// Method:  result
 	// Inputs:  void
 	// Outputs: outcome
 	// Comment: if the auction is over, it returns the result, else highest bid.
-	Result(context.Context, *Empty) (*Outcome, error)
+	Result(context.Context, *Reply) (*Outcome, error)
 	// Method
 	// Comment: Sends accepted bid to followers, and waits for a majority of acknowledges
-	ReplicateBid(context.Context, *BidEntry) (*Ack, error)
+	ReplicateBid(context.Context, *BidEntry) (*Reply, error)
 	// When a follower detects a timeout ( doesnt recieve ack after sending)
 	// Send a message to all other servers, that we appoint a new leader
-	AnnounceNewLeader(context.Context, *LeaderInfo) (*Ack, error)
-	HeartBeat(context.Context, *Ack) (*Empty, error)
-	RequestVote(context.Context, *RequestMessage) (*VoteResult, error)
+	AnnounceNewLeader(context.Context, *LeaderInfo) (*Reply, error)
+	HeartBeat(context.Context, *Reply) (*Reply, error)
 	mustEmbedUnimplementedAuctionServerServer()
 }
 
@@ -155,23 +142,20 @@ type AuctionServerServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuctionServerServer struct{}
 
-func (UnimplementedAuctionServerServer) Bid(context.Context, *BidEntry) (*Ack, error) {
+func (UnimplementedAuctionServerServer) Bid(context.Context, *BidEntry) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Bid not implemented")
 }
-func (UnimplementedAuctionServerServer) Result(context.Context, *Empty) (*Outcome, error) {
+func (UnimplementedAuctionServerServer) Result(context.Context, *Reply) (*Outcome, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
 }
-func (UnimplementedAuctionServerServer) ReplicateBid(context.Context, *BidEntry) (*Ack, error) {
+func (UnimplementedAuctionServerServer) ReplicateBid(context.Context, *BidEntry) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplicateBid not implemented")
 }
-func (UnimplementedAuctionServerServer) AnnounceNewLeader(context.Context, *LeaderInfo) (*Ack, error) {
+func (UnimplementedAuctionServerServer) AnnounceNewLeader(context.Context, *LeaderInfo) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AnnounceNewLeader not implemented")
 }
-func (UnimplementedAuctionServerServer) HeartBeat(context.Context, *Ack) (*Empty, error) {
+func (UnimplementedAuctionServerServer) HeartBeat(context.Context, *Reply) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
-}
-func (UnimplementedAuctionServerServer) RequestVote(context.Context, *RequestMessage) (*VoteResult, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RequestVote not implemented")
 }
 func (UnimplementedAuctionServerServer) mustEmbedUnimplementedAuctionServerServer() {}
 func (UnimplementedAuctionServerServer) testEmbeddedByValue()                       {}
@@ -213,7 +197,7 @@ func _AuctionServer_Bid_Handler(srv interface{}, ctx context.Context, dec func(i
 }
 
 func _AuctionServer_Result_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
+	in := new(Reply)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -225,7 +209,7 @@ func _AuctionServer_Result_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: AuctionServer_Result_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionServerServer).Result(ctx, req.(*Empty))
+		return srv.(AuctionServerServer).Result(ctx, req.(*Reply))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -267,7 +251,7 @@ func _AuctionServer_AnnounceNewLeader_Handler(srv interface{}, ctx context.Conte
 }
 
 func _AuctionServer_HeartBeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Ack)
+	in := new(Reply)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -279,25 +263,7 @@ func _AuctionServer_HeartBeat_Handler(srv interface{}, ctx context.Context, dec 
 		FullMethod: AuctionServer_HeartBeat_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionServerServer).HeartBeat(ctx, req.(*Ack))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _AuctionServer_RequestVote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RequestMessage)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(AuctionServerServer).RequestVote(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: AuctionServer_RequestVote_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionServerServer).RequestVote(ctx, req.(*RequestMessage))
+		return srv.(AuctionServerServer).HeartBeat(ctx, req.(*Reply))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -328,10 +294,6 @@ var AuctionServer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "HeartBeat",
 			Handler:    _AuctionServer_HeartBeat_Handler,
-		},
-		{
-			MethodName: "RequestVote",
-			Handler:    _AuctionServer_RequestVote_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
