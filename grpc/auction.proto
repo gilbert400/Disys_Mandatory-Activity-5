@@ -28,13 +28,23 @@ service AuctionServer {
   //Send a message to all other servers, that we appoint a new leader
   rpc AnnounceNewLeader(LeaderInfo) returns (Ack);
 
-  rpc AreYouAlive(Empty) returns (Ack);
+  rpc HeartBeat(Ack) returns (Empty);
+
+  rpc RequestVote(RequestMessage) returns (VoteResult);
 }
 
 message Outcome {
   string result = 1;
   int32 highestBid = 2;
   string highestBidder = 3;
+}
+
+message RequestMessage{
+  int32 id = 1;
+}
+
+message VoteResult{
+  bool result = 1;
 }
 
 message BidEntry {
