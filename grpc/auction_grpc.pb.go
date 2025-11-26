@@ -27,6 +27,7 @@ const (
 	AuctionServer_Result_FullMethodName            = "/grpc.AuctionServer/Result"
 	AuctionServer_ReplicateBid_FullMethodName      = "/grpc.AuctionServer/ReplicateBid"
 	AuctionServer_AnnounceNewLeader_FullMethodName = "/grpc.AuctionServer/AnnounceNewLeader"
+	AuctionServer_StartElection_FullMethodName     = "/grpc.AuctionServer/StartElection"
 	AuctionServer_HeartBeat_FullMethodName         = "/grpc.AuctionServer/HeartBeat"
 )
 
@@ -49,7 +50,8 @@ type AuctionServerClient interface {
 	ReplicateBid(ctx context.Context, in *BidEntry, opts ...grpc.CallOption) (*Reply, error)
 	// When a follower detects a timeout ( doesnt recieve ack after sending)
 	// Send a message to all other servers, that we appoint a new leader
-	AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Reply, error)
+	AnnounceNewLeader(ctx context.Context, in *NodeInfo, opts ...grpc.CallOption) (*Reply, error)
+	StartElection(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*NodeInfo, error)
 	HeartBeat(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*Reply, error)
 }
 
@@ -91,10 +93,20 @@ func (c *auctionServerClient) ReplicateBid(ctx context.Context, in *BidEntry, op
 	return out, nil
 }
 
-func (c *auctionServerClient) AnnounceNewLeader(ctx context.Context, in *LeaderInfo, opts ...grpc.CallOption) (*Reply, error) {
+func (c *auctionServerClient) AnnounceNewLeader(ctx context.Context, in *NodeInfo, opts ...grpc.CallOption) (*Reply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(Reply)
 	err := c.cc.Invoke(ctx, AuctionServer_AnnounceNewLeader_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *auctionServerClient) StartElection(ctx context.Context, in *Reply, opts ...grpc.CallOption) (*NodeInfo, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(NodeInfo)
+	err := c.cc.Invoke(ctx, AuctionServer_StartElection_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +142,8 @@ type AuctionServerServer interface {
 	ReplicateBid(context.Context, *BidEntry) (*Reply, error)
 	// When a follower detects a timeout ( doesnt recieve ack after sending)
 	// Send a message to all other servers, that we appoint a new leader
-	AnnounceNewLeader(context.Context, *LeaderInfo) (*Reply, error)
+	AnnounceNewLeader(context.Context, *NodeInfo) (*Reply, error)
+	StartElection(context.Context, *Reply) (*NodeInfo, error)
 	HeartBeat(context.Context, *Reply) (*Reply, error)
 	mustEmbedUnimplementedAuctionServerServer()
 }
@@ -151,8 +164,11 @@ func (UnimplementedAuctionServerServer) Result(context.Context, *Reply) (*Outcom
 func (UnimplementedAuctionServerServer) ReplicateBid(context.Context, *BidEntry) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReplicateBid not implemented")
 }
-func (UnimplementedAuctionServerServer) AnnounceNewLeader(context.Context, *LeaderInfo) (*Reply, error) {
+func (UnimplementedAuctionServerServer) AnnounceNewLeader(context.Context, *NodeInfo) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AnnounceNewLeader not implemented")
+}
+func (UnimplementedAuctionServerServer) StartElection(context.Context, *Reply) (*NodeInfo, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartElection not implemented")
 }
 func (UnimplementedAuctionServerServer) HeartBeat(context.Context, *Reply) (*Reply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HeartBeat not implemented")
@@ -233,7 +249,7 @@ func _AuctionServer_ReplicateBid_Handler(srv interface{}, ctx context.Context, d
 }
 
 func _AuctionServer_AnnounceNewLeader_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LeaderInfo)
+	in := new(NodeInfo)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -245,7 +261,25 @@ func _AuctionServer_AnnounceNewLeader_Handler(srv interface{}, ctx context.Conte
 		FullMethod: AuctionServer_AnnounceNewLeader_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuctionServerServer).AnnounceNewLeader(ctx, req.(*LeaderInfo))
+		return srv.(AuctionServerServer).AnnounceNewLeader(ctx, req.(*NodeInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuctionServer_StartElection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Reply)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuctionServerServer).StartElection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuctionServer_StartElection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuctionServerServer).StartElection(ctx, req.(*Reply))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -290,6 +324,10 @@ var AuctionServer_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AnnounceNewLeader",
 			Handler:    _AuctionServer_AnnounceNewLeader_Handler,
+		},
+		{
+			MethodName: "StartElection",
+			Handler:    _AuctionServer_StartElection_Handler,
 		},
 		{
 			MethodName: "HeartBeat",

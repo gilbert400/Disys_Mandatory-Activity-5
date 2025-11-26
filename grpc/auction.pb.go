@@ -189,7 +189,7 @@ func (x *BidEntry) GetSeqNo() int64 {
 	return 0
 }
 
-type LeaderInfo struct {
+type NodeInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	LeaderAddr    string                 `protobuf:"bytes,1,opt,name=leaderAddr,proto3" json:"leaderAddr,omitempty"`
 	LeaderId      int32                  `protobuf:"varint,2,opt,name=leaderId,proto3" json:"leaderId,omitempty"`
@@ -197,20 +197,20 @@ type LeaderInfo struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *LeaderInfo) Reset() {
-	*x = LeaderInfo{}
+func (x *NodeInfo) Reset() {
+	*x = NodeInfo{}
 	mi := &file_grpc_auction_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *LeaderInfo) String() string {
+func (x *NodeInfo) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*LeaderInfo) ProtoMessage() {}
+func (*NodeInfo) ProtoMessage() {}
 
-func (x *LeaderInfo) ProtoReflect() protoreflect.Message {
+func (x *NodeInfo) ProtoReflect() protoreflect.Message {
 	mi := &file_grpc_auction_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -222,19 +222,19 @@ func (x *LeaderInfo) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use LeaderInfo.ProtoReflect.Descriptor instead.
-func (*LeaderInfo) Descriptor() ([]byte, []int) {
+// Deprecated: Use NodeInfo.ProtoReflect.Descriptor instead.
+func (*NodeInfo) Descriptor() ([]byte, []int) {
 	return file_grpc_auction_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *LeaderInfo) GetLeaderAddr() string {
+func (x *NodeInfo) GetLeaderAddr() string {
 	if x != nil {
 		return x.LeaderAddr
 	}
 	return ""
 }
 
-func (x *LeaderInfo) GetLeaderId() int32 {
+func (x *NodeInfo) GetLeaderId() int32 {
 	if x != nil {
 		return x.LeaderId
 	}
@@ -257,18 +257,18 @@ const file_grpc_auction_proto_rawDesc = "" +
 	"\x06amount\x18\x01 \x01(\x05R\x06amount\x12\x16\n" +
 	"\x06bidder\x18\x02 \x01(\tR\x06bidder\x12\x1c\n" +
 	"\ttimestamp\x18\x03 \x01(\x05R\ttimestamp\x12\x14\n" +
-	"\x05seqNo\x18\x04 \x01(\x03R\x05seqNo\"H\n" +
-	"\n" +
-	"LeaderInfo\x12\x1e\n" +
+	"\x05seqNo\x18\x04 \x01(\x03R\x05seqNo\"F\n" +
+	"\bNodeInfo\x12\x1e\n" +
 	"\n" +
 	"leaderAddr\x18\x01 \x01(\tR\n" +
 	"leaderAddr\x12\x1a\n" +
-	"\bleaderId\x18\x02 \x01(\x05R\bleaderId2\xe1\x01\n" +
+	"\bleaderId\x18\x02 \x01(\x05R\bleaderId2\x8d\x02\n" +
 	"\rAuctionServer\x12\"\n" +
 	"\x03Bid\x12\x0e.grpc.BidEntry\x1a\v.grpc.Reply\x12$\n" +
 	"\x06Result\x12\v.grpc.Reply\x1a\r.grpc.Outcome\x12+\n" +
-	"\fReplicateBid\x12\x0e.grpc.BidEntry\x1a\v.grpc.Reply\x122\n" +
-	"\x11AnnounceNewLeader\x12\x10.grpc.LeaderInfo\x1a\v.grpc.Reply\x12%\n" +
+	"\fReplicateBid\x12\x0e.grpc.BidEntry\x1a\v.grpc.Reply\x120\n" +
+	"\x11AnnounceNewLeader\x12\x0e.grpc.NodeInfo\x1a\v.grpc.Reply\x12,\n" +
+	"\rStartElection\x12\v.grpc.Reply\x1a\x0e.grpc.NodeInfo\x12%\n" +
 	"\tHeartBeat\x12\v.grpc.Reply\x1a\v.grpc.ReplyB!Z\x1fDisys_Mandatory-Activity-5/grpcb\x06proto3"
 
 var (
@@ -285,24 +285,26 @@ func file_grpc_auction_proto_rawDescGZIP() []byte {
 
 var file_grpc_auction_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_grpc_auction_proto_goTypes = []any{
-	(*Outcome)(nil),    // 0: grpc.Outcome
-	(*Reply)(nil),      // 1: grpc.Reply
-	(*BidEntry)(nil),   // 2: grpc.BidEntry
-	(*LeaderInfo)(nil), // 3: grpc.LeaderInfo
+	(*Outcome)(nil),  // 0: grpc.Outcome
+	(*Reply)(nil),    // 1: grpc.Reply
+	(*BidEntry)(nil), // 2: grpc.BidEntry
+	(*NodeInfo)(nil), // 3: grpc.NodeInfo
 }
 var file_grpc_auction_proto_depIdxs = []int32{
 	2, // 0: grpc.AuctionServer.Bid:input_type -> grpc.BidEntry
 	1, // 1: grpc.AuctionServer.Result:input_type -> grpc.Reply
 	2, // 2: grpc.AuctionServer.ReplicateBid:input_type -> grpc.BidEntry
-	3, // 3: grpc.AuctionServer.AnnounceNewLeader:input_type -> grpc.LeaderInfo
-	1, // 4: grpc.AuctionServer.HeartBeat:input_type -> grpc.Reply
-	1, // 5: grpc.AuctionServer.Bid:output_type -> grpc.Reply
-	0, // 6: grpc.AuctionServer.Result:output_type -> grpc.Outcome
-	1, // 7: grpc.AuctionServer.ReplicateBid:output_type -> grpc.Reply
-	1, // 8: grpc.AuctionServer.AnnounceNewLeader:output_type -> grpc.Reply
-	1, // 9: grpc.AuctionServer.HeartBeat:output_type -> grpc.Reply
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
+	3, // 3: grpc.AuctionServer.AnnounceNewLeader:input_type -> grpc.NodeInfo
+	1, // 4: grpc.AuctionServer.StartElection:input_type -> grpc.Reply
+	1, // 5: grpc.AuctionServer.HeartBeat:input_type -> grpc.Reply
+	1, // 6: grpc.AuctionServer.Bid:output_type -> grpc.Reply
+	0, // 7: grpc.AuctionServer.Result:output_type -> grpc.Outcome
+	1, // 8: grpc.AuctionServer.ReplicateBid:output_type -> grpc.Reply
+	1, // 9: grpc.AuctionServer.AnnounceNewLeader:output_type -> grpc.Reply
+	3, // 10: grpc.AuctionServer.StartElection:output_type -> grpc.NodeInfo
+	1, // 11: grpc.AuctionServer.HeartBeat:output_type -> grpc.Reply
+	6, // [6:12] is the sub-list for method output_type
+	0, // [0:6] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
